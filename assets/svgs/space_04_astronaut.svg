@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- space_04_astronaut.svg (15 regions) -->
+  <path id="region_1" d="M 0 408 Q 160 374 300 404 Q 420 426 500 392 L 500 500 L 0 500 Z" data-preview-color="#E2E8F0" />
+  <path id="region_2" d="M 84 68 L 91.1 86.3 L 110.6 87.3 L 95.4 99.7 L 100.5 118.7 L 84 108 L 67.5 118.7 L 72.6 99.7 L 57.4 87.3 L 76.9 86.3 Z M 414 78 L 420.5 95.1 L 438.7 96 L 424.5 107.4 L 429.3 125 L 414 115 L 398.7 125 L 403.5 107.4 L 389.3 96 L 407.5 95.1 Z" data-preview-color="#FFD60A" />
+  <path id="region_3" d="M 60 246 A 32 32 0 1 0 124 246 A 32 32 0 1 0 60 246 Z" data-preview-color="#C77DFF" />
+  <path id="region_4" d="M 397 224 L 399 224 Q 404 224 404 229 L 404 405 Q 404 410 399 410 L 397 410 Q 392 410 392 405 L 392 229 Q 392 224 397 224 Z" data-preview-color="#94A3B8" />
+  <path id="region_5" d="M 412 224 L 460 224 Q 470 224 470 234 L 470 260 Q 470 270 460 270 L 412 270 Q 402 270 402 260 L 402 234 Q 402 224 412 224 Z" data-preview-color="#FF4D6D" />
+  <path id="region_6" d="M 96 294 A 42 26 0 1 0 180 294 A 42 26 0 1 0 96 294 Z M 320 294 A 42 26 0 1 0 404 294 A 42 26 0 1 0 320 294 Z" data-preview-color="#FFFFFF" />
+  <path id="region_7" d="M 204 376 L 218 376 Q 234 376 234 392 L 234 422 Q 234 438 218 438 L 204 438 Q 188 438 188 422 L 188 392 Q 188 376 204 376 Z M 282 376 L 296 376 Q 312 376 312 392 L 312 422 Q 312 438 296 438 L 282 438 Q 266 438 266 422 L 266 392 Q 266 376 282 376 Z" data-preview-color="#3A86FF" />
+  <path id="region_8" d="M 200 248 L 300 248 Q 334 248 334 282 L 334 356 Q 334 390 300 390 L 200 390 Q 166 390 166 356 L 166 282 Q 166 248 200 248 Z" data-preview-color="#FFFFFF" />
+  <path id="region_9" d="M 220 282 L 280 282 Q 296 282 296 298 L 296 332 Q 296 348 280 348 L 220 348 Q 204 348 204 332 L 204 298 Q 204 282 220 282 Z" data-preview-color="#4CC9F0" />
+  <path id="region_10" d="M 154 164 A 96 96 0 1 0 346 164 A 96 96 0 1 0 154 164 Z" data-preview-color="#FFFFFF" />
+  <path id="region_11" d="M 178 168 A 72 58 0 1 0 322 168 A 72 58 0 1 0 178 168 Z" data-preview-color="#FFE5D9" />
+  <path id="region_12" d="M 206 162 A 14 14 0 1 0 234 162 A 14 14 0 1 0 206 162 Z M 266 162 A 14 14 0 1 0 294 162 A 14 14 0 1 0 266 162 Z" data-fixed-color="#1E293B" />
+  <path id="region_13" d="M 211 158.1 A 5 5 0 1 0 221.1 158.1 A 5 5 0 1 0 211 158.1 Z M 221 165.5 A 2.5 2.5 0 1 0 226 165.5 A 2.5 2.5 0 1 0 221 165.5 Z M 271 158.1 A 5 5 0 1 0 281.1 158.1 A 5 5 0 1 0 271 158.1 Z M 281 165.5 A 2.5 2.5 0 1 0 286 165.5 A 2.5 2.5 0 1 0 281 165.5 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_14" d="M 181.4 186 A 12.6 7.8 0 1 0 206.6 186 A 12.6 7.8 0 1 0 181.4 186 Z M 293.4 186 A 12.6 7.8 0 1 0 318.6 186 A 12.6 7.8 0 1 0 293.4 186 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_15" d="M 230 190 Q 250 204 270 190 Q 272 194.8 268 196.8 Q 250 211.8 232 196.8 Q 228 194.8 230 190 Z" data-fixed-color="#3B2F2F" />
+</svg>

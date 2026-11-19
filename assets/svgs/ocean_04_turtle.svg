@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- ocean_04_turtle.svg (13 regions) -->
+  <path id="region_1" d="M 0 412 Q 160 384 290 410 Q 410 430 500 398 L 500 500 L 0 500 Z" data-preview-color="#FDE68A" />
+  <path id="region_2" d="M 64 424 C 44 364 88 320 66 274 C 98 294 112 352 92 424 Z" data-preview-color="#2EC4B6" />
+  <path id="region_3" d="M 78 114 A 20 20 0 1 0 118 114 A 20 20 0 1 0 78 114 Z M 120 82 A 12 12 0 1 0 144 82 A 12 12 0 1 0 120 82 Z M 386 108 A 18 18 0 1 0 422 108 A 18 18 0 1 0 386 108 Z" data-preview-color="#BAE6FD" />
+  <path id="region_4" d="M 108 344 A 48 22 0 1 0 204 344 A 48 22 0 1 0 108 344 Z M 234 344 A 52 24 0 1 0 338 344 A 52 24 0 1 0 234 344 Z" data-preview-color="#6BCB77" />
+  <path id="region_5" d="M 94 286 C 98 148 332 148 336 286 Z" data-preview-color="#38B000" />
+  <path id="region_6" d="M 181 212 A 34 34 0 1 0 249 212 A 34 34 0 1 0 181 212 Z M 132 244 A 24 24 0 1 0 180 244 A 24 24 0 1 0 132 244 Z M 250 244 A 24 24 0 1 0 298 244 A 24 24 0 1 0 250 244 Z" data-preview-color="#FFD60A" />
+  <path id="region_7" d="M 102 274 L 328 274 Q 344 274 344 290 L 344 290 Q 344 306 328 306 L 102 306 Q 86 306 86 290 L 86 290 Q 86 274 102 274 Z" data-preview-color="#9EF01A" />
+  <path id="region_8" d="M 330 256 A 62 52 0 1 0 454 256 A 62 52 0 1 0 330 256 Z" data-preview-color="#6BCB77" />
+  <path id="region_9" d="M 396 410 L 403.1 428.3 L 422.6 429.3 L 407.4 441.7 L 412.5 460.7 L 396 450 L 379.5 460.7 L 384.6 441.7 L 369.4 429.3 L 388.9 428.3 Z" data-preview-color="#FF70A6" />
+  <path id="region_10" d="M 360 246 A 12 12 0 1 0 384 246 A 12 12 0 1 0 360 246 Z M 406 246 A 12 12 0 1 0 430 246 A 12 12 0 1 0 406 246 Z" data-fixed-color="#1E293B" />
+  <path id="region_11" d="M 364.3 242.6 A 4.3 4.3 0 1 0 373 242.6 A 4.3 4.3 0 1 0 364.3 242.6 Z M 372.8 249 A 2.2 2.2 0 1 0 377.2 249 A 2.2 2.2 0 1 0 372.8 249 Z M 410.3 242.6 A 4.3 4.3 0 1 0 419 242.6 A 4.3 4.3 0 1 0 410.3 242.6 Z M 418.8 249 A 2.2 2.2 0 1 0 423.2 249 A 2.2 2.2 0 1 0 418.8 249 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_12" d="M 346.2 270 A 10.8 6.7 0 1 0 367.8 270 A 10.8 6.7 0 1 0 346.2 270 Z M 422.2 270 A 10.8 6.7 0 1 0 443.8 270 A 10.8 6.7 0 1 0 422.2 270 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_13" d="M 375 270 Q 395 284 415 270 Q 417 274.8 413 276.8 Q 395 291.8 377 276.8 Q 373 274.8 375 270 Z" data-fixed-color="#3B2F2F" />
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- dino_06_pterodactyl.svg (14 regions) -->
+  <path id="region_1" d="M 48 86 A 38 38 0 1 0 124 86 A 38 38 0 1 0 48 86 Z" data-preview-color="#FFD60A" />
+  <path id="region_2" d="M 66.2 411.8 C 48.6 411.8 46.9 385.4 69.8 383.7 C 71.5 360.8 101.4 355.5 113.8 373.1 C 126.1 357.3 156 366.1 156 385.4 C 175.4 387.2 175.4 411.8 154.2 411.8 Z" data-preview-color="#E0F7FA" />
+  <path id="region_3" d="M 352.3 397.1 C 335.5 397.1 333.8 371.9 355.7 370.2 C 357.4 348.4 385.9 343.4 397.7 360.2 C 409.4 345 438 353.4 438 371.9 C 456.5 373.6 456.5 397.1 436.3 397.1 Z" data-preview-color="#E0F7FA" />
+  <path id="region_4" d="M 218 244 L 42 156 C 48 242 108 294 206 286 Z" data-preview-color="#FF70A6" />
+  <path id="region_5" d="M 282 244 L 458 156 C 452 242 392 294 294 286 Z" data-preview-color="#FF70A6" />
+  <path id="region_6" d="M 194 286 A 56 68 0 1 0 306 286 A 56 68 0 1 0 194 286 Z" data-preview-color="#EC407A" />
+  <path id="region_7" d="M 216 294 A 34 44 0 1 0 284 294 A 34 44 0 1 0 216 294 Z" data-preview-color="#FCE7F3" />
+  <path id="region_8" d="M 208 362 A 16 22 0 1 0 240 362 A 16 22 0 1 0 208 362 Z M 260 362 A 16 22 0 1 0 292 362 A 16 22 0 1 0 260 362 Z" data-preview-color="#FF9F1C" />
+  <path id="region_9" d="M 232 144 L 250 66 L 286 144 Z" data-preview-color="#FFD60A" />
+  <path id="region_10" d="M 188 178 A 62 62 0 1 0 312 178 A 62 62 0 1 0 188 178 Z" data-preview-color="#EC407A" />
+  <path id="region_11" d="M 208 172 A 14 14 0 1 0 236 172 A 14 14 0 1 0 208 172 Z M 264 172 A 14 14 0 1 0 292 172 A 14 14 0 1 0 264 172 Z" data-fixed-color="#1E293B" />
+  <path id="region_12" d="M 213 168.1 A 5 5 0 1 0 223.1 168.1 A 5 5 0 1 0 213 168.1 Z M 223 175.5 A 2.5 2.5 0 1 0 228 175.5 A 2.5 2.5 0 1 0 223 175.5 Z M 269 168.1 A 5 5 0 1 0 279.1 168.1 A 5 5 0 1 0 269 168.1 Z M 279 175.5 A 2.5 2.5 0 1 0 284 175.5 A 2.5 2.5 0 1 0 279 175.5 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_13" d="M 183.4 196 A 12.6 7.8 0 1 0 208.6 196 A 12.6 7.8 0 1 0 183.4 196 Z M 291.4 196 A 12.6 7.8 0 1 0 316.6 196 A 12.6 7.8 0 1 0 291.4 196 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_14" d="M 230 200 Q 250 214 270 200 Q 272 204.8 268 206.8 Q 250 221.8 232 206.8 Q 228 204.8 230 200 Z" data-fixed-color="#3B2F2F" />
+</svg>

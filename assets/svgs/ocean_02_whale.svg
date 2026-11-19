@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- ocean_02_whale.svg (16 regions) -->
+  <path id="region_1" d="M 0 388 Q 84 352 168 388 Q 252 424 336 388 Q 420 352 500 388 L 500 500 L 0 500 Z" data-preview-color="#38BDF8" />
+  <path id="region_2" d="M 382 82 A 38 38 0 1 0 458 82 A 38 38 0 1 0 382 82 Z" data-preview-color="#FFD60A" />
+  <path id="region_3" d="M 64.4 100.4 C 48.4 100.4 46.8 76.4 67.6 74.8 C 69.2 54 96.4 49.2 107.6 65.2 C 118.8 50.8 146 58.8 146 76.4 C 163.6 78 163.6 100.4 144.4 100.4 Z" data-preview-color="#E0F7FA" />
+  <path id="region_4" d="M 272 170 C 266 110 218 82 190 108 C 214 114 238 134 252 172 Z" data-preview-color="#7DD3FC" />
+  <path id="region_5" d="M 278 170 C 284 110 332 82 360 108 C 336 114 312 134 298 172 Z" data-preview-color="#7DD3FC" />
+  <path id="region_6" d="M 116 286 C 68 256 44 214 82 204 C 110 198 124 236 126 266 C 142 232 168 206 186 226 C 198 242 164 276 136 296 Z" data-preview-color="#0077B6" />
+  <path id="region_7" d="M 116 300 C 122 212 204 168 296 172 C 384 176 436 234 432 308 C 428 378 354 402 252 396 C 176 392 112 362 116 300 Z" data-preview-color="#00B4D8" />
+  <path id="region_8" d="M 216 340 C 276 328 362 328 416 346 C 392 388 326 400 246 394 Z" data-preview-color="#E0F7FA" />
+  <path id="region_9" d="M 244 316 C 206 342 198 386 232 390 C 260 392 278 352 268 318 Z" data-preview-color="#0077B6" />
+  <path id="region_10" d="M 58 342 A 16 16 0 1 0 90 342 A 16 16 0 1 0 58 342 Z M 88 314 A 10 10 0 1 0 108 314 A 10 10 0 1 0 88 314 Z" data-preview-color="#BAE6FD" />
+  <path id="region_11" d="M 402 434 A 24 15 0 1 0 450 434 A 24 15 0 1 0 402 434 Z M 448 434 L 468 420 L 468 448 Z" data-preview-color="#FF9F1C" />
+  <path id="region_12" d="M 275 101.3 C 254.3 88.7 255.2 70.7 275 81.5 C 294.8 70.7 295.7 88.7 275 101.3 Z" data-preview-color="#FF5C8A" />
+  <path id="region_13" d="M 344 266 A 18 18 0 1 0 380 266 A 18 18 0 1 0 344 266 Z" data-fixed-color="#1E293B" />
+  <path id="region_14" d="M 349.5 260 A 6.5 6.5 0 1 0 362.5 260 A 6.5 6.5 0 1 0 349.5 260 Z M 364.8 272 A 3.2 3.2 0 1 0 371.2 272 A 3.2 3.2 0 1 0 364.8 272 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_15" d="M 322 298 A 16 10 0 1 0 354 298 A 16 10 0 1 0 322 298 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_16" d="M 358 304 Q 382 318 406 304 Q 408 309 404 311 Q 382 326 360 311 Q 356 309 358 304 Z" data-fixed-color="#3B2F2F" />
+</svg>

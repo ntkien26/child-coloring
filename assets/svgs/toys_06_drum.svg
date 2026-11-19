@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- toys_06_drum.svg (14 regions) -->
+  <path id="region_1" d="M 55 446 A 195 34 0 1 0 445 446 A 195 34 0 1 0 55 446 Z" data-preview-color="#E2E8F0" />
+  <path id="region_2" d="M 86 86 L 93.1 104.3 L 112.6 105.3 L 97.4 117.7 L 102.5 136.7 L 86 126 L 69.5 136.7 L 74.6 117.7 L 59.4 105.3 L 78.9 104.3 Z M 414 86 L 421.1 104.3 L 440.6 105.3 L 425.4 117.7 L 430.5 136.7 L 414 126 L 397.5 136.7 L 402.6 117.7 L 387.4 105.3 L 406.9 104.3 Z" data-preview-color="#FFD60A" />
+  <path id="region_3" d="M 134 114 L 326 218 L 316 234 L 124 130 Z M 310 224 A 18 18 0 1 0 346 224 A 18 18 0 1 0 310 224 Z" data-preview-color="#D4A373" />
+  <path id="region_4" d="M 366 114 L 174 218 L 184 234 L 376 130 Z M 154 224 A 18 18 0 1 0 190 224 A 18 18 0 1 0 154 224 Z" data-preview-color="#D4A373" />
+  <path id="region_5" d="M 130 214 L 370 214 Q 396 214 396 240 L 396 384 Q 396 410 370 410 L 130 410 Q 104 410 104 384 L 104 240 Q 104 214 130 214 Z" data-preview-color="#FF3B30" />
+  <path id="region_6" d="M 108 354 L 156 264 L 204 354 L 250 264 L 296 354 L 344 264 L 392 354 Z" data-preview-color="#FFD60A" />
+  <path id="region_7" d="M 110 204 L 390 204 Q 406 204 406 220 L 406 220 Q 406 236 390 236 L 110 236 Q 94 236 94 220 L 94 220 Q 94 204 110 204 Z" data-preview-color="#3A86FF" />
+  <path id="region_8" d="M 110 386 L 390 386 Q 406 386 406 402 L 406 402 Q 406 418 390 418 L 110 418 Q 94 418 94 402 L 94 402 Q 94 386 110 386 Z" data-preview-color="#3A86FF" />
+  <path id="region_9" d="M 102 204 A 148 34 0 1 0 398 204 A 148 34 0 1 0 102 204 Z" data-preview-color="#FFF8E7" />
+  <path id="region_10" d="M 250 132.4 C 222.4 115.6 223.6 91.6 250 106 C 276.4 91.6 277.6 115.6 250 132.4 Z" data-preview-color="#FF5C8A" />
+  <path id="region_11" d="M 191 298 A 15 15 0 1 0 221 298 A 15 15 0 1 0 191 298 Z M 279 298 A 15 15 0 1 0 309 298 A 15 15 0 1 0 279 298 Z" data-fixed-color="#1E293B" />
+  <path id="region_12" d="M 196.4 293.8 A 5.4 5.4 0 1 0 207.2 293.8 A 5.4 5.4 0 1 0 196.4 293.8 Z M 207.1 301.8 A 2.7 2.7 0 1 0 212.4 301.8 A 2.7 2.7 0 1 0 207.1 301.8 Z M 284.4 293.8 A 5.4 5.4 0 1 0 295.2 293.8 A 5.4 5.4 0 1 0 284.4 293.8 Z M 295.1 301.8 A 2.7 2.7 0 1 0 300.4 301.8 A 2.7 2.7 0 1 0 295.1 301.8 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_13" d="M 166.5 322 A 13.5 8.4 0 1 0 193.5 322 A 13.5 8.4 0 1 0 166.5 322 Z M 306.5 322 A 13.5 8.4 0 1 0 333.5 322 A 13.5 8.4 0 1 0 306.5 322 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_14" d="M 230 332 Q 250 346 270 332 Q 272 336.8 268 338.8 Q 250 353.8 232 338.8 Q 228 336.8 230 332 Z" data-fixed-color="#3B2F2F" />
+</svg>

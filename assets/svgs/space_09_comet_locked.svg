@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- space_09_comet_locked.svg (12 regions) -->
+  <path id="region_1" d="M 92 80 L 98.5 97.1 L 116.7 98 L 102.5 109.4 L 107.3 127 L 92 117 L 76.7 127 L 81.5 109.4 L 67.3 98 L 85.5 97.1 Z M 396 368 L 403.1 386.3 L 422.6 387.3 L 407.4 399.7 L 412.5 418.7 L 396 408 L 379.5 418.7 L 384.6 399.7 L 369.4 387.3 L 388.9 386.3 Z" data-preview-color="#4CC9F0" />
+  <path id="region_2" d="M 66 392 A 38 38 0 1 0 142 392 A 38 38 0 1 0 66 392 Z" data-preview-color="#C77DFF" />
+  <path id="region_3" d="M 420.5 74 A 34 34 0 1 0 420.5 142 A 26.5 28.9 0 1 1 420.5 74 Z" data-preview-color="#FFF07C" />
+  <path id="region_4" d="M 224 196 L 34 336 L 78 364 L 264 256 Z" data-preview-color="#FF5C8A" />
+  <path id="region_5" d="M 236 222 L 54 382 L 106 404 L 284 276 Z" data-preview-color="#FF9F1C" />
+  <path id="region_6" d="M 254 246 L 96 426 L 154 434 L 304 294 Z" data-preview-color="#4CC9F0" />
+  <path id="region_7" d="M 312 70 L 354.3 153.8 L 447.1 168.1 L 380.5 234.2 L 395.5 326.9 L 312 284 L 228.5 326.9 L 243.5 234.2 L 176.9 168.1 L 269.7 153.8 Z" data-preview-color="#FFD60A" />
+  <path id="region_8" d="M 244 216 A 68 68 0 1 0 380 216 A 68 68 0 1 0 244 216 Z" data-preview-color="#FFF3B0" />
+  <path id="region_9" d="M 270 208 A 14 14 0 1 0 298 208 A 14 14 0 1 0 270 208 Z M 326 208 A 14 14 0 1 0 354 208 A 14 14 0 1 0 326 208 Z" data-fixed-color="#1E293B" />
+  <path id="region_10" d="M 275 204.1 A 5 5 0 1 0 285.1 204.1 A 5 5 0 1 0 275 204.1 Z M 285 211.5 A 2.5 2.5 0 1 0 290 211.5 A 2.5 2.5 0 1 0 285 211.5 Z M 331 204.1 A 5 5 0 1 0 341.1 204.1 A 5 5 0 1 0 331 204.1 Z M 341 211.5 A 2.5 2.5 0 1 0 346 211.5 A 2.5 2.5 0 1 0 341 211.5 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_11" d="M 253.4 232 A 12.6 7.8 0 1 0 278.6 232 A 12.6 7.8 0 1 0 253.4 232 Z M 345.4 232 A 12.6 7.8 0 1 0 370.6 232 A 12.6 7.8 0 1 0 345.4 232 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_12" d="M 292 234 Q 312 248 332 234 Q 334 238.8 330 240.8 Q 312 255.8 294 240.8 Q 290 238.8 292 234 Z" data-fixed-color="#3B2F2F" />
+</svg>

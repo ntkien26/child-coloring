@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- dino_07_ankylosaurus_locked.svg (14 regions) -->
+  <path id="region_1" d="M 0 398 Q 140 368 270 394 Q 390 412 500 382 L 500 500 L 0 500 Z" data-preview-color="#7ED957" />
+  <path id="region_2" d="M 46 80 A 38 38 0 1 0 122 80 A 38 38 0 1 0 46 80 Z" data-preview-color="#FFD60A" />
+  <path id="region_3" d="M 354.4 100.4 C 338.4 100.4 336.8 76.4 357.6 74.8 C 359.2 54 386.4 49.2 397.6 65.2 C 408.8 50.8 436 58.8 436 76.4 C 453.6 78 453.6 100.4 434.4 100.4 Z" data-preview-color="#E0F7FA" />
+  <path id="region_4" d="M 146 322 L 72 286 L 84 342 L 154 352 Z" data-preview-color="#D97706" />
+  <path id="region_5" d="M 34 296 A 32 32 0 1 0 98 296 A 32 32 0 1 0 34 296 Z" data-preview-color="#B45309" />
+  <path id="region_6" d="M 148 228 L 176 184 L 208 214 L 246 172 L 284 214 L 316 186 L 336 232 Z" data-preview-color="#EA580C" />
+  <path id="region_7" d="M 134 336 C 134 202 346 202 346 336 Z" data-preview-color="#B45309" />
+  <path id="region_8" d="M 158 316 L 322 316 Q 346 316 346 340 L 346 346 Q 346 370 322 370 L 158 370 Q 134 370 134 346 L 134 340 Q 134 316 158 316 Z" data-preview-color="#FBBF24" />
+  <path id="region_9" d="M 168 356 L 178 356 Q 192 356 192 370 L 192 408 Q 192 422 178 422 L 168 422 Q 154 422 154 408 L 154 370 Q 154 356 168 356 Z M 238 360 L 248 360 Q 262 360 262 374 L 262 412 Q 262 426 248 426 L 238 426 Q 224 426 224 412 L 224 374 Q 224 360 238 360 Z M 306 356 L 316 356 Q 330 356 330 370 L 330 408 Q 330 422 316 422 L 306 422 Q 292 422 292 408 L 292 370 Q 292 356 306 356 Z" data-preview-color="#F59E0B" />
+  <path id="region_10" d="M 314 304 A 62 52 0 1 0 438 304 A 62 52 0 1 0 314 304 Z" data-preview-color="#FBBF24" />
+  <path id="region_11" d="M 342 294 A 12 12 0 1 0 366 294 A 12 12 0 1 0 342 294 Z M 390 294 A 12 12 0 1 0 414 294 A 12 12 0 1 0 390 294 Z" data-fixed-color="#1E293B" />
+  <path id="region_12" d="M 346.3 290.6 A 4.3 4.3 0 1 0 355 290.6 A 4.3 4.3 0 1 0 346.3 290.6 Z M 354.8 297 A 2.2 2.2 0 1 0 359.2 297 A 2.2 2.2 0 1 0 354.8 297 Z M 394.3 290.6 A 4.3 4.3 0 1 0 403 290.6 A 4.3 4.3 0 1 0 394.3 290.6 Z M 402.8 297 A 2.2 2.2 0 1 0 407.2 297 A 2.2 2.2 0 1 0 402.8 297 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_13" d="M 328.2 318 A 10.8 6.7 0 1 0 349.8 318 A 10.8 6.7 0 1 0 328.2 318 Z M 406.2 318 A 10.8 6.7 0 1 0 427.8 318 A 10.8 6.7 0 1 0 406.2 318 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_14" d="M 358 318 Q 378 332 398 318 Q 400 322.8 396 324.8 Q 378 339.8 360 324.8 Q 356 322.8 358 318 Z" data-fixed-color="#3B2F2F" />
+</svg>

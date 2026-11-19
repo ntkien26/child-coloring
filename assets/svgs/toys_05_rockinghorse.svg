@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- toys_05_rockinghorse.svg (14 regions) -->
+  <path id="region_1" d="M 54 396 Q 250 458 446 396 L 432 426 Q 250 486 68 426 Z" data-preview-color="#D97706" />
+  <path id="region_2" d="M 84 72 L 90.5 89.1 L 108.7 90 L 94.5 101.4 L 99.3 119 L 84 109 L 68.7 119 L 73.5 101.4 L 59.3 90 L 77.5 89.1 Z M 412 126.1 C 382.1 107.9 383.4 81.9 412 97.5 C 440.6 81.9 441.9 107.9 412 126.1 Z" data-preview-color="#FF85C0" />
+  <path id="region_3" d="M 156 304 L 162 304 Q 176 304 176 318 L 176 402 Q 176 416 162 416 L 156 416 Q 142 416 142 402 L 142 318 Q 142 304 156 304 Z M 330 304 L 336 304 Q 350 304 350 318 L 350 402 Q 350 416 336 416 L 330 416 Q 316 416 316 402 L 316 318 Q 316 304 330 304 Z" data-preview-color="#E0A96D" />
+  <path id="region_4" d="M 134 252 C 74 242 56 306 94 332 C 122 346 138 298 144 276 Z" data-preview-color="#FF5C8A" />
+  <path id="region_5" d="M 136 274 C 136 226 326 226 344 274 C 354 322 136 328 136 274 Z" data-preview-color="#F3D5B5" />
+  <path id="region_6" d="M 216 232 L 272 232 Q 290 232 290 250 L 290 276 Q 290 294 272 294 L 216 294 Q 198 294 198 276 L 198 250 Q 198 232 216 232 Z" data-preview-color="#3A86FF" />
+  <path id="region_7" d="M 284 254 L 316 144 L 378 164 L 348 268 Z" data-preview-color="#F3D5B5" />
+  <path id="region_8" d="M 298 156 A 58 42 0 1 0 414 156 A 58 42 0 1 0 298 156 Z" data-preview-color="#F3D5B5" />
+  <path id="region_9" d="M 286 232 C 266 196 286 146 318 132 L 332 104 L 348 128 Z" data-preview-color="#FF5C8A" />
+  <path id="region_10" d="M 228 262 A 16 16 0 1 0 260 262 A 16 16 0 1 0 228 262 Z" data-preview-color="#FFD60A" />
+  <path id="region_11" d="M 325 148 A 11 11 0 1 0 347 148 A 11 11 0 1 0 325 148 Z M 365 148 A 11 11 0 1 0 387 148 A 11 11 0 1 0 365 148 Z" data-fixed-color="#1E293B" />
+  <path id="region_12" d="M 329 144.9 A 4 4 0 1 0 336.9 144.9 A 4 4 0 1 0 329 144.9 Z M 336.8 150.8 A 2 2 0 1 0 340.7 150.8 A 2 2 0 1 0 336.8 150.8 Z M 369 144.9 A 4 4 0 1 0 376.9 144.9 A 4 4 0 1 0 369 144.9 Z M 376.8 150.8 A 2 2 0 1 0 380.7 150.8 A 2 2 0 1 0 376.8 150.8 Z" data-fixed-color="#FFFFFF" />
+  <path id="region_13" d="M 312.1 172 A 9.9 6.2 0 1 0 331.9 172 A 9.9 6.2 0 1 0 312.1 172 Z M 380.1 172 A 9.9 6.2 0 1 0 399.9 172 A 9.9 6.2 0 1 0 380.1 172 Z" data-fixed-color="#FF9EB5" />
+  <path id="region_14" d="M 336 172 Q 356 186 376 172 Q 378 176.8 374 178.8 Q 356 193.8 338 178.8 Q 334 176.8 336 172 Z" data-fixed-color="#3B2F2F" />
+</svg>
