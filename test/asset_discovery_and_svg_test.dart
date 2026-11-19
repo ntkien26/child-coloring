@@ -15,7 +15,7 @@ void main() {
   group('AssetDiscoveryService', () {
     const discovery = AssetDiscoveryService();
 
-    test('discovers all 18 SVG files from assets/svgs across 6 themes', () {
+    test('discovers all 60 SVG files from assets/svgs across 6 themes', () {
       final svgFiles = Directory('assets/svgs')
           .listSync()
           .whereType<File>()
@@ -23,7 +23,7 @@ void main() {
           .map((f) => f.path.replaceAll('\\', '/'))
           .toList();
 
-      expect(svgFiles.length, 18);
+      expect(svgFiles.length, 60);
 
       final catalog = discovery.discoverFromAssetPaths(svgFiles);
       expect(catalog.length, 6);
@@ -34,30 +34,31 @@ void main() {
 
       for (final themeId in GameThemeId.values) {
         final pages = catalog[themeId]!;
-        expect(pages.length, 3, reason: 'Theme $themeId should have 3 SVGs');
+        expect(pages.length, 10, reason: 'Theme $themeId should have 10 SVGs');
         expect(pages[0].order, 1);
         expect(pages[1].order, 2);
-        expect(pages[2].order, 3);
+        expect(pages[5].order, 6);
+        expect(pages[6].order, 7);
         expect(pages[0].isLocked, isFalse);
-        expect(pages[1].isLocked, isFalse);
-        expect(pages[2].isLocked, isTrue);
+        expect(pages[5].isLocked, isFalse);
+        expect(pages[6].isLocked, isTrue);
 
         totalPages += pages.length;
         lockedCount += pages.where((p) => p.isLocked).length;
         freeCount += pages.where((p) => !p.isLocked).length;
       }
 
-      expect(totalPages, 18);
-      expect(lockedCount, 6);
-      expect(freeCount, 12);
+      expect(totalPages, 60);
+      expect(lockedCount, 24);
+      expect(freeCount, 36);
     });
 
-    test('discoverFromManifest loads bundled 18 SVGs via AssetManifest', () async {
+    test('discoverFromManifest loads bundled 60 SVGs via AssetManifest', () async {
       final catalog = await discovery.discoverFromManifest();
       final total = catalog.values.fold<int>(0, (sum, list) => sum + list.length);
-      expect(total, 18);
+      expect(total, 60);
       expect(
-        catalog[GameThemeId.cuteAnimals]!.map((p) => p.isLocked).toList(),
+        catalog[GameThemeId.cuteAnimals]!.sublist(4, 7).map((p) => p.isLocked).toList(),
         [false, false, true],
       );
     });
@@ -86,22 +87,23 @@ void main() {
   group('SvgParserService & Path Hit-Testing', () {
     final parser = SvgParserService();
 
-    test('all 18 SVGs parse cleanly with 12-18 paths, fixed & preview colors', () {
+    test('all 60 SVGs parse cleanly with 12-18 paths, fixed & preview colors', () {
       final svgFiles = Directory('assets/svgs')
           .listSync()
           .whereType<File>()
           .where((f) => f.path.endsWith('.svg'))
           .toList();
 
-      expect(svgFiles.length, 18);
+      expect(svgFiles.length, 60);
 
       for (final file in svgFiles) {
         final raw = file.readAsStringSync();
         final drawing = parser.parseSvgString(raw);
 
         expect(drawing.viewBox, const Rect.fromLTWH(0, 0, 500, 500));
+        expect(drawing.regions.first.isBackground, isTrue);
         expect(
-          drawing.regions.length,
+          drawing.regions.where((r) => !r.isBackground).length,
           inInclusiveRange(12, 18),
           reason: '${file.path} has ${drawing.regions.length} paths',
         );
@@ -111,11 +113,11 @@ void main() {
             drawing.regions.where((r) => r.previewColor != null).length;
 
         expect(fixedCount, greaterThanOrEqualTo(4), reason: file.path);
-        expect(previewCount, greaterThanOrEqualTo(10), reason: file.path);
+        expect(previewCount, greaterThanOrEqualTo(8), reason: file.path);
       }
     });
 
-    test('path.contains() hit-tests cat regions accurately', () {
+    test('path.contains() hit-tests cat regions and background accurately', () {
       final raw = File('assets/svgs/animals_01_cat.svg').readAsStringSync();
       final drawing = parser.parseSvgString(raw);
 
@@ -135,9 +137,15 @@ void main() {
       expect(bellyHit, isNotNull);
       expect(bellyHit!.id, 'region_7');
 
-      // Empty sky corner (10, 10) -> no region hit
-      final miss = drawing.hitTestColorable(const Offset(10, 10));
-      expect(miss, isNull);
+      // Empty sky corner (10, 10) -> hits colorable background region
+      final bgHit = drawing.hitTestColorable(const Offset(10, 10));
+      expect(bgHit, isNotNull);
+      expect(bgHit!.id, 'region_background');
+      expect(bgHit.isBackground, isTrue);
+
+      // Outside viewBox (-10, -10) -> no region hit
+      final outsideHit = drawing.hitTestColorable(const Offset(-10, -10));
+      expect(outsideHit, isNull);
     });
   });
 

@@ -1,4 +1,4 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -9,23 +9,23 @@ const Color kComicInk = Color(0xFF3B2314);
 const Color kParchmentTop = Color(0xFFFFF5CC);
 const Color kParchmentBottom = Color(0xFFFDE6A6);
 
-/// Playful elastic scale + fade transition between game screens.
+/// Smooth scale + fade transition between game screens with isolated layer caching.
 Route<T> bouncyGameRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
-    transitionDuration: const Duration(milliseconds: 320),
-    reverseTransitionDuration: const Duration(milliseconds: 240),
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
     pageBuilder: (_, _, _) => page,
     transitionsBuilder: (_, animation, _, child) {
       final curved = CurvedAnimation(
         parent: animation,
-        curve: Curves.easeOutBack,
+        curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       );
       return FadeTransition(
-        opacity: animation,
+        opacity: curved,
         child: ScaleTransition(
-          scale: Tween<double>(begin: 0.93, end: 1.0).animate(curved),
-          child: child,
+          scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
+          child: RepaintBoundary(child: child),
         ),
       );
     },
@@ -403,72 +403,84 @@ class StorybookHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topInset = MediaQuery.paddingOf(context).top;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
         final cw = math.min(w, 460.0);
-        final h = cw * 0.54;
+        final artH = cw * 0.54;
+        final totalH = artH + topInset;
 
         return SizedBox(
           width: w,
-          height: h,
+          height: totalH,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
+              // Sky background extends seamlessly behind the status bar
               Positioned.fill(
                 child: CustomPaint(painter: _HeroSkyPainter()),
               ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: cw,
-                  height: h,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(painter: _HeroSceneryPainter()),
-                      ),
-                      Positioned(
-                        left: cw * 0.16,
-                        right: cw * 0.16,
-                        top: h * 0.10,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              RainbowComicText(
-                                line1,
-                                fontSize: h * 0.20,
-                                colors: _line1Colors,
-                              ),
-                              SizedBox(height: h * 0.01),
-                              RainbowComicText(
-                                line2,
-                                fontSize: h * 0.225,
-                                colors: _line2Colors,
-                              ),
-                            ],
-                          ),
+              // Hero artwork & rainbow title offset below status bar icons
+              Positioned(
+                top: topInset,
+                left: 0,
+                right: 0,
+                height: artH,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: cw,
+                    height: artH,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(painter: _HeroSceneryPainter()),
                         ),
-                      ),
-                      if (bottomAction != null)
                         Positioned(
-                          left: 0,
-                          right: 0,
-                          top: h * 0.65,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: bottomAction!,
+                          left: cw * 0.16,
+                          right: cw * 0.16,
+                          top: artH * 0.10,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                RainbowComicText(
+                                  line1,
+                                  fontSize: artH * 0.20,
+                                  colors: _line1Colors,
+                                ),
+                                SizedBox(height: artH * 0.01),
+                                RainbowComicText(
+                                  line2,
+                                  fontSize: artH * 0.225,
+                                  colors: _line2Colors,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                    ],
+                        if (bottomAction != null)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            top: artH * 0.65,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: bottomAction!,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              Positioned(top: 8, left: 12, child: leftAction),
-              Positioned(top: 8, right: 12, child: rightAction),
+              // Action buttons safely positioned below status bar icons
+              Positioned(top: topInset + 8, left: 12, child: leftAction),
+              Positioned(top: topInset + 8, right: 12, child: rightAction),
             ],
           ),
         );

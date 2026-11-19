@@ -27,6 +27,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _muted = AudioService.instance.isMuted;
+  bool _isNavigating = false;
 
   void _toggleMute() {
     setState(() {
@@ -35,12 +36,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
-  void _openThemeWorld(GameTheme theme) {
+  Future<void> _openThemeWorld(GameTheme theme) async {
+    if (_isNavigating) return;
+    _isNavigating = true;
     AudioService.instance.playThemeSwitch();
     ref.read(selectedThemeIdProvider.notifier).state = theme.id;
-    Navigator.of(context).push(
+
+    // Brief tactile delay so the theme card bounce animation completes cleanly
+    // before the route transition starts.
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    if (!mounted) {
+      _isNavigating = false;
+      return;
+    }
+
+    await Navigator.of(context).push(
       bouncyGameRoute<void>(DrawingSelectScreen(theme: theme)),
     );
+    _isNavigating = false;
   }
 
   @override
@@ -54,6 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       body: WarmCartoonBackground(
         child: SafeArea(
+          top: false,
           bottom: false,
           child: Column(
             children: [
@@ -301,96 +315,98 @@ class _CartoonThemeCardState extends ConsumerState<_CartoonThemeCard> {
               ),
               Transform.translate(
                 offset: Offset(0, _pressed ? 4.5 : 0.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [lightenColor(cardBase, 0.12), cardBase, cardDeep],
+                child: RepaintBoundary(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [lightenColor(cardBase, 0.12), cardBase, cardDeep],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: kComicInk, width: 2.8),
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: kComicInk, width: 2.8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(21),
-                    child: Stack(
-                      children: [
-                        // Soft glossy shine
-                        Positioned(
-                          top: -18,
-                          left: 12,
-                          right: 12,
-                          height: 40,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.24),
-                              borderRadius: BorderRadius.circular(26),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(21),
+                      child: Stack(
+                        children: [
+                          // Soft glossy shine
+                          Positioned(
+                            top: -18,
+                            left: 12,
+                            right: 12,
+                            height: 40,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.24),
+                                borderRadius: BorderRadius.circular(26),
+                              ),
                             ),
                           ),
-                        ),
-                        // Ground patch that the characters stand on
-                        Positioned(
-                          left: 10,
-                          right: 10,
-                          bottom: 40,
-                          height: 26,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.26),
-                              borderRadius: BorderRadius.circular(40),
+                          // Ground patch that the characters stand on
+                          Positioned(
+                            left: 10,
+                            right: 10,
+                            bottom: 40,
+                            height: 26,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.26),
+                                borderRadius: BorderRadius.circular(40),
+                              ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 36),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: OutlinedComicText(
-                                    widget.theme
-                                        .localizedShortTitle(lang)
-                                        .toUpperCase(),
-                                    fontSize: titleSize,
-                                    fillColor: Colors.white,
-                                    strokeWidth: 4.4,
-                                    letterSpacing: 0.6,
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 36),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: OutlinedComicText(
+                                      widget.theme
+                                          .localizedShortTitle(lang)
+                                          .toUpperCase(),
+                                      fontSize: titleSize,
+                                      fillColor: Colors.white,
+                                      strokeWidth: 4.4,
+                                      letterSpacing: 0.6,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Expanded(
-                                      child: _StickerCharacter(
-                                        drawingAsync: firstDrawing,
-                                        fallbackIcon: widget.theme.icon,
-                                      ),
-                                    ),
-                                    if (secondDrawing != null)
+                                const SizedBox(height: 2),
+                                Expanded(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
                                       Expanded(
                                         child: _StickerCharacter(
-                                          drawingAsync: secondDrawing,
+                                          drawingAsync: firstDrawing,
                                           fallbackIcon: widget.theme.icon,
                                         ),
                                       ),
-                                  ],
+                                      if (secondDrawing != null)
+                                        Expanded(
+                                          child: _StickerCharacter(
+                                            drawingAsync: secondDrawing,
+                                            fallbackIcon: widget.theme.icon,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              CartoonProgressBar(
-                                completed: widget.completedCount,
-                                total: widget.pages.length,
-                              ),
-                            ],
+                                const SizedBox(height: 12),
+                                CartoonProgressBar(
+                                  completed: widget.completedCount,
+                                  total: widget.pages.length,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

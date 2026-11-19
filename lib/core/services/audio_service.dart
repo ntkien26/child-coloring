@@ -36,7 +36,7 @@ class AudioService {
   Future<void> playErase() => _playSafe('erase.wav', volume: 0.6);
 
   Future<void> _playSafe(String fileName, {double volume = 0.7}) async {
-    if (_muted) return;
+    if (_muted || !_initialized) return;
     try {
       await FlameAudio.play(fileName, volume: volume);
     } catch (e) {

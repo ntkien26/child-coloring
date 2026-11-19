@@ -73,7 +73,79 @@ class ThemedEffectGame extends FlameGame {
     );
 
     add(ParticleSystemComponent(particle: particle));
+
+    // Expanding shockwave ring + paint splatter droplets at tap point
+    final ringColor = accentColor ?? _theme.primaryColor;
+    final shockwave = ComputedParticle(
+      lifespan: 0.42,
+      renderer: (canvas, p) {
+        final t = Curves.easeOutCubic.transform(p.progress);
+        final alpha = (1.0 - p.progress).clamp(0.0, 1.0);
+        final radius = 10.0 + t * 54.0;
+        final ringPaint = Paint()
+          ..color = ringColor.withValues(alpha: alpha * 0.72)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5.0 * (1.0 - t * 0.65);
+        canvas.drawCircle(
+          Offset(origin.x, origin.y),
+          radius,
+          ringPaint,
+        );
+      },
+    );
+    add(ParticleSystemComponent(particle: shockwave));
+
     _mascot?.triggerHappyHop();
+  }
+
+  void spawnBrushTrail(
+    Offset localPosition, {
+    Color? accentColor,
+    bool isSpecialPattern = false,
+  }) {
+    if (!isMounted) return;
+    final origin = Vector2(localPosition.dx, localPosition.dy);
+    final colors = [
+      ?accentColor,
+      ..._theme.particleColors,
+    ];
+    final count = isSpecialPattern ? 5 : 3;
+
+    final particle = Particle.generate(
+      count: count,
+      lifespan: 0.48,
+      generator: (i) {
+        final angle = _rng.nextDouble() * math.pi * 2;
+        final speed = 28 + _rng.nextDouble() * 68;
+        final vx = math.cos(angle) * speed;
+        final vy = math.sin(angle) * speed - 22;
+        final color = colors[_rng.nextInt(colors.length)];
+        final radius = 3.2 + _rng.nextDouble() * 3.8;
+        final shape = isSpecialPattern
+            ? ParticleShape.sparkle
+            : _theme.particleShape;
+
+        return AcceleratedParticle(
+          position: origin.clone(),
+          speed: Vector2(vx, vy),
+          acceleration: Vector2(0, 95),
+          child: ComputedParticle(
+            renderer: (canvas, p) {
+              final opacity = (1.0 - p.progress).clamp(0.0, 1.0);
+              final scale = 1.0 - p.progress * 0.4;
+              final paint = Paint()
+                ..color = color.withValues(alpha: opacity * 0.9)
+                ..style = PaintingStyle.fill;
+              canvas.save();
+              canvas.scale(scale);
+              _drawParticleShape(canvas, shape, radius, paint, opacity);
+              canvas.restore();
+            },
+          ),
+        );
+      },
+    );
+    add(ParticleSystemComponent(particle: particle));
   }
 
   void triggerCelebration() {

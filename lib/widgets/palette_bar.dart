@@ -463,22 +463,29 @@ class _ToyCrayonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final restOffset = compact ? 6.0 : 12.0;
     return Tooltip(
       message: name,
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: selected ? 0.0 : restOffset),
+          duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutBack,
-          width: compact ? null : 46,
-          padding: EdgeInsets.only(
-            top: selected ? 0 : (compact ? 6 : 14),
-            bottom: 2,
-          ),
-          child: CustomPaint(
-            painter: _CrayonPainter(
-              color: color,
-              selected: selected,
+          builder: (context, offsetY, child) {
+            return Transform.translate(
+              offset: Offset(0, offsetY),
+              child: child,
+            );
+          },
+          child: Container(
+            width: compact ? null : 46,
+            padding: const EdgeInsets.only(top: 4, bottom: 2),
+            child: CustomPaint(
+              painter: _CrayonPainter(
+                color: color,
+                selected: selected,
+              ),
             ),
           ),
         ),

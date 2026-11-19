@@ -31,7 +31,36 @@ class DrawingSelectScreen extends ConsumerStatefulWidget {
 
 class _DrawingSelectScreenState extends ConsumerState<DrawingSelectScreen> {
   bool _muted = AudioService.instance.isMuted;
-  String? _selectedPageId;
+  bool _routeSettled = false;
+  Animation<double>? _routeAnimation;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final anim = ModalRoute.of(context)?.animation;
+    if (anim == null || anim.isCompleted || anim.value >= 0.99) {
+      _routeSettled = true;
+    } else if (_routeAnimation != anim) {
+      _routeAnimation?.removeStatusListener(_onRouteAnimationStatus);
+      _routeAnimation = anim;
+      anim.addStatusListener(_onRouteAnimationStatus);
+    }
+  }
+
+  void _onRouteAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed ||
+        status == AnimationStatus.dismissed) {
+      if (mounted && !_routeSettled) {
+        setState(() => _routeSettled = true);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _routeAnimation?.removeStatusListener(_onRouteAnimationStatus);
+    super.dispose();
+  }
 
   void _toggleMute() {
     setState(() {
@@ -58,17 +87,7 @@ class _DrawingSelectScreenState extends ConsumerState<DrawingSelectScreen> {
   }
 
   void _onCardTap(ColoringPage page) {
-    final monetization = ref.read(monetizationProvider);
-    if (!monetization.isPageUnlocked(page)) {
-      _launchOrUnlockPage(page);
-      return;
-    }
-    if (_selectedPageId == page.id) {
-      _launchOrUnlockPage(page);
-    } else {
-      AudioService.instance.playPop();
-      setState(() => _selectedPageId = page.id);
-    }
+    _launchOrUnlockPage(page);
   }
 
   Future<void> _showUnlockPageDialog(ColoringPage page) async {
@@ -244,15 +263,6 @@ class _DrawingSelectScreenState extends ConsumerState<DrawingSelectScreen> {
     final lang = ref.watch(localeProvider);
     final s = ref.watch(stringsProvider);
 
-    final pagesList = pagesAsync.valueOrNull ?? const <ColoringPage>[];
-    ColoringPage? activePage;
-    if (pagesList.isNotEmpty) {
-      activePage = pagesList.firstWhere(
-        (p) => p.id == _selectedPageId,
-        orElse: () => pagesList.first,
-      );
-    }
-
     return Scaffold(
       body: WarmCartoonBackground(
         child: SafeArea(
@@ -368,15 +378,14 @@ class _DrawingSelectScreenState extends ConsumerState<DrawingSelectScreen> {
                           itemBuilder: (context, index) {
                             final page = pages[index];
                             final unlocked = monetization.isPageUnlocked(page);
-                            final isSelected = activePage?.id == page.id;
                             final isDone = completedPages.contains(page.id);
 
                             return _SplitBeforeAfterCard(
                               page: page,
                               theme: widget.theme,
                               isUnlocked: unlocked,
-                              isSelected: isSelected,
                               isCompleted: isDone,
+                              deferThumbnail: !_routeSettled && index >= 2,
                               onTap: () => _onCardTap(page),
                             );
                           },
@@ -386,48 +395,6 @@ class _DrawingSelectScreenState extends ConsumerState<DrawingSelectScreen> {
                   },
                 ),
               ),
-
-              // Big Golden Cartoon "CHƠI NGAY" / "PLAY NOW" Button
-              if (activePage != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 6, 24, 12),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 270),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: JuicyButton(
-                        color: const Color(0xFFFFD43B),
-                        borderRadius: 26,
-                        depth: 6,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 13,
-                        ),
-                        onTap: () => _launchOrUnlockPage(activePage!),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.play_arrow_rounded,
-                              color: kComicInk,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              s.playNowBig,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                color: kComicInk,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
 
               const SafeBannerAd(),
             ],
@@ -444,17 +411,17 @@ class _SplitBeforeAfterCard extends ConsumerStatefulWidget {
     required this.page,
     required this.theme,
     required this.isUnlocked,
-    required this.isSelected,
     required this.isCompleted,
     required this.onTap,
+    this.deferThumbnail = false,
   });
 
   final ColoringPage page;
   final GameTheme theme;
   final bool isUnlocked;
-  final bool isSelected;
   final bool isCompleted;
   final VoidCallback onTap;
+  final bool deferThumbnail;
 
   @override
   ConsumerState<_SplitBeforeAfterCard> createState() =>
@@ -466,7 +433,9 @@ class _SplitBeforeAfterCardState extends ConsumerState<_SplitBeforeAfterCard> {
 
   @override
   Widget build(BuildContext context) {
-    final drawingAsync = ref.watch(parsedDrawingProvider(widget.page.assetPath));
+    final drawingAsync = widget.deferThumbnail
+        ? null
+        : ref.watch(parsedDrawingProvider(widget.page.assetPath));
     final lang = ref.watch(localeProvider);
     final s = ref.watch(stringsProvider);
 
@@ -487,77 +456,83 @@ class _SplitBeforeAfterCardState extends ConsumerState<_SplitBeforeAfterCard> {
                 clipBehavior: Clip.none,
                 children: [
                   // White Ink-Outlined Split Card
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: widget.isSelected
-                            ? const Color(0xFFFF922B)
-                            : kComicInk,
-                        width: widget.isSelected ? 4.0 : 2.6,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: widget.isSelected
-                              ? const Color(0xFFFFB300).withValues(alpha: 0.45)
-                              : kComicInk.withValues(alpha: 0.16),
-                          blurRadius: widget.isSelected ? 12 : 4,
-                          offset: const Offset(0, 4),
+                  RepaintBoundary(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: kComicInk,
+                          width: 2.8,
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16.5),
-                      child: drawingAsync.when(
-                        loading: () => Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.6,
-                              color: widget.theme.primaryColor,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: kComicInk.withValues(alpha: 0.16),
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        error: (_, _) => const Center(
-                          child: Icon(Icons.broken_image_rounded),
-                        ),
-                        data: (drawing) => Row(
-                          children: [
-                            // Left: Black-and-white line-art
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: DrawingThumbnail(
-                                  drawing: drawing,
-                                  showColorPreview: false,
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16.5),
+                        child: drawingAsync == null
+                            ? Center(
+                                child: Icon(
+                                  widget.theme.icon,
+                                  color: widget.theme.primaryColor
+                                      .withValues(alpha: 0.28),
+                                  size: 36,
+                                ),
+                              )
+                            : drawingAsync.when(
+                                loading: () => Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.6,
+                                      color: widget.theme.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                                error: (_, _) => const Center(
+                                  child: Icon(Icons.broken_image_rounded),
+                                ),
+                                data: (drawing) => Row(
+                                  children: [
+                                    // Left: Black-and-white line-art
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: DrawingThumbnail(
+                                          drawing: drawing,
+                                          showColorPreview: false,
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Center Dashed Vertical Divider
+                                    SizedBox(
+                                      width: 2,
+                                      height: double.infinity,
+                                      child: CustomPaint(
+                                        painter: _DashedVerticalLinePainter(),
+                                      ),
+                                    ),
+
+                                    // Right: Vibrant Colored Preview
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: DrawingThumbnail(
+                                          drawing: drawing,
+                                          showColorPreview: true,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-
-                            // Center Dashed Vertical Divider
-                            SizedBox(
-                              width: 2,
-                              height: double.infinity,
-                              child: CustomPaint(
-                                painter: _DashedVerticalLinePainter(),
-                              ),
-                            ),
-
-                            // Right: Vibrant Colored Preview
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: DrawingThumbnail(
-                                  drawing: drawing,
-                                  showColorPreview: true,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),

@@ -37,7 +37,7 @@ class ColoringCanvas extends StatefulWidget {
   final void Function(ColorableRegion region, Offset localPosition) onRegionTap;
   final void Function(ColorableRegion region, Offset svgPoint, Offset localPosition)
       onStrokeStart;
-  final void Function(Offset svgPoint) onStrokeUpdate;
+  final void Function(Offset svgPoint, Offset localPosition) onStrokeUpdate;
   final VoidCallback onStrokeEnd;
   final void Function(Offset svgPoint, Offset localPosition) onAddSticker;
   final VoidCallback onStickerDragStart;
@@ -48,16 +48,156 @@ class ColoringCanvas extends StatefulWidget {
   State<ColoringCanvas> createState() => _ColoringCanvasState();
 }
 
-class _ColoringCanvasState extends State<ColoringCanvas> {
+class _RegionFillTransition {
+  const _RegionFillTransition({
+    required this.origin,
+    required this.previousFill,
+    required this.startTimeMs,
+  });
+
+  final Offset origin;
+  final RegionFill? previousFill;
+  final int startTimeMs;
+}
+
+class _StickerSpawnTransition {
+  const _StickerSpawnTransition({
+    required this.startTimeMs,
+  });
+
+  final int startTimeMs;
+}
+
+class _ColoringCanvasState extends State<ColoringCanvas>
+    with SingleTickerProviderStateMixin {
   String? _draggingStickerId;
   bool _isDrawingStroke = false;
+
+  late final AnimationController _animController;
+  final Map<String, _RegionFillTransition> _fillAnimations = {};
+  final Map<String, _StickerSpawnTransition> _stickerAnimations = {};
+  Offset? _lastTappedSvgPoint;
+  String? _lastTappedRegionId;
+
+  static const int _fillAnimDurationMs = 460;
+  static const int _stickerAnimDurationMs = 420;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )..addListener(_onAnimationTick);
+  }
+
+  void _onAnimationTick() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    _fillAnimations.removeWhere(
+      (_, anim) => now - anim.startTimeMs >= _fillAnimDurationMs,
+    );
+    _stickerAnimations.removeWhere(
+      (_, anim) => now - anim.startTimeMs >= _stickerAnimDurationMs,
+    );
+    if (_fillAnimations.isEmpty && _stickerAnimations.isEmpty) {
+      _animController.stop();
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _ensureTickerRunning() {
+    if (!_animController.isAnimating) {
+      _animController.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ColoringCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.drawing != widget.drawing) {
+      _fillAnimations.clear();
+      _stickerAnimations.clear();
+      _animController.stop();
+      return;
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    bool addedAnim = false;
+
+    // Detect region fill changes (tap-fill, erase, undo/redo)
+    final allRegionIds = <String>{
+      ...oldWidget.regionFills.keys,
+      ...widget.regionFills.keys,
+    };
+    for (final regionId in allRegionIds) {
+      final oldFill = oldWidget.regionFills[regionId];
+      final newFill = widget.regionFills[regionId];
+      if (oldFill != newFill) {
+        Offset? origin;
+        if (_lastTappedRegionId == regionId && _lastTappedSvgPoint != null) {
+          origin = _lastTappedSvgPoint;
+        } else {
+          for (final r in widget.drawing.regions) {
+            if (r.id == regionId) {
+              origin = r.bounds.center;
+              break;
+            }
+          }
+        }
+        _fillAnimations[regionId] = _RegionFillTransition(
+          origin: origin ?? widget.drawing.viewBox.center,
+          previousFill: oldFill,
+          startTimeMs: now,
+        );
+        addedAnim = true;
+      }
+    }
+    _lastTappedRegionId = null;
+    _lastTappedSvgPoint = null;
+
+    // Detect newly placed stickers for elastic pop-in animation
+    if (widget.stickers.length > oldWidget.stickers.length) {
+      final oldIds = oldWidget.stickers.map((s) => s.id).toSet();
+      for (final s in widget.stickers) {
+        if (!oldIds.contains(s.id)) {
+          _stickerAnimations[s.id] = _StickerSpawnTransition(startTimeMs: now);
+          addedAnim = true;
+        }
+      }
+    }
+
+    if (addedAnim) {
+      _ensureTickerRunning();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   _CanvasTransform _computeTransform(Size size) {
     final vb = widget.drawing.viewBox;
     final scale = math.min(size.width / vb.width, size.height / vb.height);
     final dx = (size.width - vb.width * scale) / 2 - vb.left * scale;
     final dy = (size.height - vb.height * scale) / 2 - vb.top * scale;
-    return _CanvasTransform(scale: scale, dx: dx, dy: dy);
+    final visibleSvgRect = scale > 0
+        ? Rect.fromLTWH(
+            -dx / scale,
+            -dy / scale,
+            size.width / scale,
+            size.height / scale,
+          )
+        : vb;
+    return _CanvasTransform(
+      scale: scale,
+      dx: dx,
+      dy: dy,
+      visibleSvgRect: visibleSvgRect,
+    );
   }
 
   PlacedSticker? _hitTestSticker(Offset svgPoint) {
@@ -66,6 +206,36 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
       if ((sticker.position - svgPoint).distance <= 32.0 * sticker.scale) {
         return sticker;
       }
+    }
+    return null;
+  }
+
+  ColorableRegion? _hitTestColorableOrBackground(Offset svgPoint) {
+    final hit = widget.drawing.hitTestColorable(svgPoint);
+    if (hit != null) return hit;
+
+    // If the user taps outside the 500x500 viewBox (e.g. in the top/bottom or
+    // left/right margin of a non-square canvas stage), check if a full-width
+    // horizon/ground region extends into that margin; otherwise hit the background!
+    final vb = widget.drawing.viewBox;
+    for (int i = widget.drawing.regions.length - 1; i >= 0; i--) {
+      final r = widget.drawing.regions[i];
+      if (!r.isColorable || r.isBackground) continue;
+      final isHorizon = r.bounds.left <= vb.left + 2.0 &&
+          r.bounds.right >= vb.right - 2.0 &&
+          r.bounds.bottom >= vb.bottom - 2.0;
+      if (!isHorizon) continue;
+      final clampedPoint = Offset(
+        svgPoint.dx.clamp(vb.left + 1.0, vb.right - 1.0),
+        svgPoint.dy.clamp(vb.top + 1.0, vb.bottom - 1.0),
+      );
+      if (svgPoint.dy >= r.bounds.top && r.path.contains(clampedPoint)) {
+        return r;
+      }
+    }
+
+    for (final r in widget.drawing.regions) {
+      if (r.isBackground) return r;
     }
     return null;
   }
@@ -99,8 +269,10 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
               return;
             }
 
-            final hitRegion = widget.drawing.hitTestColorable(svgPoint);
+            final hitRegion = _hitTestColorableOrBackground(svgPoint);
             if (hitRegion != null) {
+              _lastTappedRegionId = hitRegion.id;
+              _lastTappedSvgPoint = svgPoint;
               widget.onRegionTap(hitRegion, local);
             }
           },
@@ -118,7 +290,7 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
             }
 
             if (widget.toolMode == ColoringToolMode.freehandBrush) {
-              final hitRegion = widget.drawing.hitTestColorable(svgPoint);
+              final hitRegion = _hitTestColorableOrBackground(svgPoint);
               if (hitRegion != null) {
                 _isDrawingStroke = true;
                 widget.onStrokeStart(hitRegion, svgPoint, local);
@@ -126,13 +298,14 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
             }
           },
           onPanUpdate: (details) {
-            final svgPoint = transform.toSvg(details.localPosition);
+            final local = details.localPosition;
+            final svgPoint = transform.toSvg(local);
             if (_draggingStickerId != null) {
               widget.onStickerDragUpdate(_draggingStickerId!, svgPoint);
               return;
             }
             if (_isDrawingStroke) {
-              widget.onStrokeUpdate(svgPoint);
+              widget.onStrokeUpdate(svgPoint, local);
             }
           },
           onPanEnd: (_) {
@@ -162,6 +335,9 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
               stickers: widget.stickers,
               transform: transform,
               usePreviewColors: false,
+              fillAnimations: _fillAnimations,
+              stickerAnimations: _stickerAnimations,
+              nowMs: DateTime.now().millisecondsSinceEpoch,
             ),
           ),
         );
@@ -197,18 +373,37 @@ class DrawingThumbnail extends StatelessWidget {
         final dx = (size.width - vb.width * scale) / 2 - vb.left * scale;
         final dy = (size.height - vb.height * scale) / 2 - vb.top * scale;
 
-        return CustomPaint(
-          size: size,
-          painter: _ColoringCanvasPainter(
-            drawing: drawing,
-            regionFills: const {},
-            strokes: const [],
-            activeStroke: null,
-            stickers: const [],
-            transform: _CanvasTransform(scale: scale, dx: dx, dy: dy),
-            usePreviewColors: showColorPreview,
-            transparentBackground: transparentBackground,
-            stickerStyle: stickerStyle,
+        final visibleSvgRect = scale > 0
+            ? Rect.fromLTWH(
+                -dx / scale,
+                -dy / scale,
+                size.width / scale,
+                size.height / scale,
+              )
+            : vb;
+
+        return RepaintBoundary(
+          child: CustomPaint(
+            size: size,
+            isComplex: true,
+            willChange: false,
+            painter: _ColoringCanvasPainter(
+              drawing: drawing,
+              regionFills: const {},
+              strokes: const [],
+              activeStroke: null,
+              stickers: const [],
+              transform: _CanvasTransform(
+                scale: scale,
+                dx: dx,
+                dy: dy,
+                visibleSvgRect: visibleSvgRect,
+              ),
+              usePreviewColors: showColorPreview,
+              transparentBackground: transparentBackground,
+              stickerStyle: stickerStyle,
+              isThumbnail: true,
+            ),
           ),
         );
       },
@@ -221,11 +416,13 @@ class _CanvasTransform {
     required this.scale,
     required this.dx,
     required this.dy,
+    required this.visibleSvgRect,
   });
 
   final double scale;
   final double dx;
   final double dy;
+  final Rect visibleSvgRect;
 
   Offset toSvg(Offset local) {
     if (scale == 0) return Offset.zero;
@@ -244,6 +441,10 @@ class _ColoringCanvasPainter extends CustomPainter {
     required this.usePreviewColors,
     this.transparentBackground = false,
     this.stickerStyle = false,
+    this.isThumbnail = false,
+    this.fillAnimations = const {},
+    this.stickerAnimations = const {},
+    this.nowMs = 0,
   });
 
   final ParsedSvgDrawing drawing;
@@ -255,8 +456,64 @@ class _ColoringCanvasPainter extends CustomPainter {
   final bool usePreviewColors;
   final bool transparentBackground;
   final bool stickerStyle;
+  final bool isThumbnail;
+  final Map<String, _RegionFillTransition> fillAnimations;
+  final Map<String, _StickerSpawnTransition> stickerAnimations;
+  final int nowMs;
 
   static const Color _outlineColor = Color(0xFF3B2314);
+
+  bool _isHorizonGroundRegion(ColorableRegion region) {
+    return region.isColorable &&
+        !region.isBackground &&
+        region.bounds.left <= drawing.viewBox.left + 2.0 &&
+        region.bounds.right >= drawing.viewBox.right - 2.0 &&
+        region.bounds.bottom >= drawing.viewBox.bottom - 2.0;
+  }
+
+  Path _expandHorizonRegionToVisibleCanvas(ColorableRegion region) {
+    final vis = transform.visibleSvgRect;
+    final vb = drawing.viewBox;
+    if (vis.left >= vb.left - 0.5 &&
+        vis.right <= vb.right + 0.5 &&
+        vis.bottom <= vb.bottom + 0.5) {
+      return region.path;
+    }
+
+    // Approximate left/right horizon y at x=0 and x=500 by probing the region path
+    double leftTopY = region.bounds.top;
+    for (double y = region.bounds.top; y <= vb.bottom; y += 2.0) {
+      if (region.path.contains(Offset(vb.left + 1.0, y))) {
+        leftTopY = y;
+        break;
+      }
+    }
+    double rightTopY = region.bounds.top;
+    for (double y = region.bounds.top; y <= vb.bottom; y += 2.0) {
+      if (region.path.contains(Offset(vb.right - 1.0, y))) {
+        rightTopY = y;
+        break;
+      }
+    }
+
+    final extended = Path.from(region.path);
+    if (vis.left < vb.left) {
+      extended.addRect(
+        Rect.fromLTRB(vis.left, leftTopY, vb.left + 1.0, vis.bottom),
+      );
+    }
+    if (vis.right > vb.right) {
+      extended.addRect(
+        Rect.fromLTRB(vb.right - 1.0, rightTopY, vis.right, vis.bottom),
+      );
+    }
+    if (vis.bottom > vb.bottom) {
+      extended.addRect(
+        Rect.fromLTRB(vis.left, vb.bottom - 1.0, vis.right, vis.bottom),
+      );
+    }
+    return extended;
+  }
 
   bool _isBackdrop(ColorableRegion region) {
     return stickerStyle &&
@@ -270,11 +527,13 @@ class _ColoringCanvasPainter extends CustomPainter {
     canvas.save();
     canvas.translate(0, 7);
     final shadow = Paint()
-      ..color = const Color(0xFF3B2314).withValues(alpha: 0.30)
+      ..color = const Color(0xFF3B2314).withValues(alpha: 0.24)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 24
-      ..strokeJoin = StrokeJoin.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+      ..strokeJoin = StrokeJoin.round;
+    if (!isThumbnail) {
+      shadow.maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    }
     for (final r in visible) {
       canvas.drawPath(r.path, shadow);
     }
@@ -298,10 +557,10 @@ class _ColoringCanvasPainter extends CustomPainter {
     canvas.translate(transform.dx, transform.dy);
     canvas.scale(transform.scale);
 
-    // Soft bright paper backdrop (optional for transparent card thumbnails)
+    // Soft bright paper backdrop covering the entire visible canvas stage
     final paperPaint = Paint()..color = const Color(0xFFFFFFFF);
     if (!transparentBackground) {
-      canvas.drawRect(drawing.viewBox, paperPaint);
+      canvas.drawRect(transform.visibleSvgRect, paperPaint);
     }
 
     if (stickerStyle) {
@@ -335,6 +594,18 @@ class _ColoringCanvasPainter extends CustomPainter {
       if (region.isFixed) continue;
       if (_isBackdrop(region)) continue;
 
+      final isBg = region.isBackground;
+      final isHorizon =
+          !isBg && !stickerStyle && !isThumbnail && _isHorizonGroundRegion(region);
+      final Path effectivePath = isBg
+          ? (Path()..addRect(transform.visibleSvgRect))
+          : (isHorizon
+              ? _expandHorizonRegionToVisibleCanvas(region)
+              : region.path);
+      final Rect effectiveBounds = isBg
+          ? transform.visibleSvgRect
+          : (isHorizon ? effectivePath.getBounds() : region.bounds);
+
       final RegionFill? fill = usePreviewColors
           ? (region.previewColor != null
               ? RegionFill(color: region.previewColor!)
@@ -342,26 +613,150 @@ class _ColoringCanvasPainter extends CustomPainter {
           : regionFills[region.id];
 
       final regionStrokes = strokesByRegion?[region.id];
+      final fillAnim = usePreviewColors ? null : fillAnimations[region.id];
 
       // White base inside region
-      canvas.drawPath(region.path, paperPaint);
+      canvas.drawPath(effectivePath, paperPaint);
 
-      if (fill != null) {
-        _paintFilledRegionWithAutoShading(canvas, region, fill);
+      if (fillAnim != null) {
+        final rawT = ((nowMs - fillAnim.startTimeMs) /
+                _ColoringCanvasState._fillAnimDurationMs)
+            .clamp(0.0, 1.0);
+        final easedT = Curves.easeOutCubic.transform(rawT);
+
+        // Paint previous fill beneath the expanding ripple if transitioning between fills
+        if (fillAnim.previousFill != null) {
+          _paintFilledRegionWithAutoShading(
+            canvas,
+            effectivePath,
+            effectiveBounds,
+            region.id.hashCode,
+            fillAnim.previousFill!,
+          );
+        }
+
+        final maxR = _maxDistanceToBounds(fillAnim.origin, effectiveBounds);
+        final radius = math.max(2.0, maxR * easedT);
+        final ripplePath = Path()
+          ..addOval(Rect.fromCircle(center: fillAnim.origin, radius: radius));
+
+        canvas.save();
+        canvas.clipPath(effectivePath);
+        canvas.save();
+        canvas.clipPath(ripplePath);
+        if (fill != null) {
+          _paintFilledRegionWithAutoShading(
+            canvas,
+            effectivePath,
+            effectiveBounds,
+            region.id.hashCode,
+            fill,
+          );
+        } else {
+          // Erase ripple wave spreading white paper over the old color
+          canvas.drawPath(effectivePath, paperPaint);
+        }
+        canvas.restore();
+
+        // Luminous wave ring at the expanding color edge
+        if (rawT < 0.96) {
+          final ringAlpha = (1.0 - rawT) * 0.78;
+          final wavePaint = Paint()
+            ..color = Colors.white.withValues(alpha: ringAlpha)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 7.5 * (1.0 - rawT * 0.4)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+          canvas.drawCircle(fillAnim.origin, radius, wavePaint);
+        }
+        canvas.restore();
+      } else if (fill != null) {
+        _paintFilledRegionWithAutoShading(
+          canvas,
+          effectivePath,
+          effectiveBounds,
+          region.id.hashCode,
+          fill,
+        );
       }
 
       // Freehand strokes strictly clipped to this region (zero bleeding!)
       if (regionStrokes != null && regionStrokes.isNotEmpty) {
         canvas.save();
-        canvas.clipPath(region.path);
+        canvas.clipPath(effectivePath);
         for (final stroke in regionStrokes) {
           _paintBrushStroke(canvas, stroke);
         }
         canvas.restore();
       }
 
-      // Crisp outline
-      canvas.drawPath(region.path, outlinePaint);
+      // Crisp outline for foreground regions (skip outer border on full-bleed background)
+      if (!isBg) {
+        if (isHorizon) {
+          // Extend the top horizon line cleanly out to the left/right canvas edges
+          // while hiding the artificial box sides/bottom of the 500x500 viewBox.
+          canvas.save();
+          canvas.clipRect(
+            Rect.fromLTRB(
+              drawing.viewBox.left + 2.0,
+              drawing.viewBox.top - 20.0,
+              drawing.viewBox.right - 2.0,
+              drawing.viewBox.bottom - 2.0,
+            ),
+          );
+          canvas.drawPath(region.path, outlinePaint);
+          canvas.restore();
+
+          final vis = transform.visibleSvgRect;
+          final vb = drawing.viewBox;
+          if (vis.left < vb.left || vis.right > vb.right) {
+            double leftTopY = region.bounds.top;
+            for (double y = region.bounds.top; y <= vb.bottom; y += 2.0) {
+              if (region.path.contains(Offset(vb.left + 1.0, y))) {
+                leftTopY = y;
+                break;
+              }
+            }
+            double rightTopY = region.bounds.top;
+            for (double y = region.bounds.top; y <= vb.bottom; y += 2.0) {
+              if (region.path.contains(Offset(vb.right - 1.0, y))) {
+                rightTopY = y;
+                break;
+              }
+            }
+            if (vis.left < vb.left) {
+              canvas.drawLine(
+                Offset(vis.left, leftTopY),
+                Offset(vb.left + 2.5, leftTopY),
+                outlinePaint,
+              );
+            }
+            if (vis.right > vb.right) {
+              canvas.drawLine(
+                Offset(vb.right - 2.5, rightTopY),
+                Offset(vis.right, rightTopY),
+                outlinePaint,
+              );
+            }
+          }
+        } else {
+          canvas.drawPath(region.path, outlinePaint);
+        }
+        if (fillAnim != null && fill != null) {
+          final rawT = ((nowMs - fillAnim.startTimeMs) /
+                  _ColoringCanvasState._fillAnimDurationMs)
+              .clamp(0.0, 1.0);
+          final pulse = math.sin(rawT * math.pi);
+          if (pulse > 0.05) {
+            final glowPaint = Paint()
+              ..color = Colors.white.withValues(alpha: pulse * 0.65)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 4.5 * pulse
+              ..strokeJoin = StrokeJoin.round
+              ..strokeCap = StrokeCap.round;
+            canvas.drawPath(region.path, glowPaint);
+          }
+        }
+      }
     }
 
     // 2. Paint fixed expressive details on top (sparkling eyes, eye-shine, cheeks, smiles)
@@ -373,41 +768,93 @@ class _ColoringCanvasPainter extends CustomPainter {
       canvas.drawPath(region.path, fixedPaint);
     }
 
-    // 3. Paint placed vector stickers
+    // 3. Paint placed vector stickers (with elastic bounce-in on placement)
     for (final sticker in stickers) {
+      double animScale = 1.0;
+      double animRotation = 0.0;
+      final stickerAnim = stickerAnimations[sticker.id];
+      if (stickerAnim != null) {
+        final rawT = ((nowMs - stickerAnim.startTimeMs) /
+                _ColoringCanvasState._stickerAnimDurationMs)
+            .clamp(0.0, 1.0);
+        animScale = Curves.elasticOut.transform(rawT).clamp(0.1, 1.35);
+        animRotation = math.sin(rawT * math.pi * 2) * (1.0 - rawT) * 0.25;
+      }
+
       StickerPainterHelper.drawSticker(
         canvas,
         sticker.type,
         sticker.position,
-        radius: 26.0 * sticker.scale,
-        rotation: sticker.rotation,
+        radius: 26.0 * sticker.scale * animScale,
+        rotation: sticker.rotation + animRotation,
+      );
+    }
+
+    // 4. Live animated brush tip halo while drawing freehand strokes
+    if (activeStroke != null && activeStroke!.points.isNotEmpty) {
+      final tip = activeStroke!.points.last;
+      final pulse = 1.0 + 0.14 * math.sin(nowMs * 0.018);
+      final tipRadius = (activeStroke!.strokeWidth * 0.62) * pulse;
+      final isEraser = activeStroke!.pattern == BrushPattern.eraser;
+      final ringColor = isEraser ? const Color(0xFF64748B) : activeStroke!.color;
+
+      canvas.drawCircle(
+        tip,
+        tipRadius + 4,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.5,
+      );
+      canvas.drawCircle(
+        tip,
+        tipRadius + 4,
+        Paint()
+          ..color = ringColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4,
       );
     }
 
     canvas.restore();
   }
 
+  static double _maxDistanceToBounds(Offset origin, Rect bounds) {
+    final d1 = (origin - bounds.topLeft).distance;
+    final d2 = (origin - bounds.topRight).distance;
+    final d3 = (origin - bounds.bottomLeft).distance;
+    final d4 = (origin - bounds.bottomRight).distance;
+    return math.max(math.max(d1, d2), math.max(d3, d4)) + 8.0;
+  }
+
   void _paintFilledRegionWithAutoShading(
     Canvas canvas,
-    ColorableRegion region,
+    Path path,
+    Rect bounds,
+    int seed,
     RegionFill fill,
   ) {
     final basePaint = Paint()
       ..color = fill.color
       ..style = PaintingStyle.fill;
-    canvas.drawPath(region.path, basePaint);
+    canvas.drawPath(path, basePaint);
+
+    // Thumbnails skip expensive per-region clipPath + Gaussian blur + gradient passes
+    if (isThumbnail && fill.pattern == BrushPattern.solid) {
+      return;
+    }
 
     canvas.save();
-    canvas.clipPath(region.path);
+    canvas.clipPath(path);
 
     // Special pattern overlay
     switch (fill.pattern) {
       case BrushPattern.glitter:
-        _paintGlitterPattern(canvas, region.bounds, region.id.hashCode, fill.color);
+        _paintGlitterPattern(canvas, bounds, seed, fill.color);
       case BrushPattern.polkaDot:
-        _paintPolkaDotPattern(canvas, region.bounds, fill.color);
+        _paintPolkaDotPattern(canvas, bounds, fill.color);
       case BrushPattern.rainbowStripe:
-        _paintRainbowStripePattern(canvas, region.bounds);
+        _paintRainbowStripePattern(canvas, bounds);
       case BrushPattern.solid:
       case BrushPattern.eraser:
         break;
@@ -420,11 +867,10 @@ class _ColoringCanvasPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 11.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.5);
-    canvas.drawPath(region.path, innerShadowPaint);
+    canvas.drawPath(path, innerShadowPaint);
 
     // Auto-Shading Layer 2: Soft top-left 3D highlight (15% lighter)
     final lighter = _shiftLightness(fill.color, 0.15);
-    final bounds = region.bounds;
     final highlightPaint = Paint()
       ..shader = ui.Gradient.linear(
         bounds.topLeft,
@@ -587,7 +1033,12 @@ class _ColoringCanvasPainter extends CustomPainter {
         oldDelegate.transform.dy != transform.dy ||
         oldDelegate.usePreviewColors != usePreviewColors ||
         oldDelegate.transparentBackground != transparentBackground ||
-        oldDelegate.stickerStyle != stickerStyle;
+        oldDelegate.stickerStyle != stickerStyle ||
+        oldDelegate.isThumbnail != isThumbnail ||
+        fillAnimations.isNotEmpty ||
+        stickerAnimations.isNotEmpty ||
+        oldDelegate.fillAnimations.isNotEmpty ||
+        oldDelegate.stickerAnimations.isNotEmpty;
   }
 }
 

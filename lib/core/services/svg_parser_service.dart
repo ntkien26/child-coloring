@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:xml/xml.dart';
@@ -29,7 +31,21 @@ class SvgParserService {
     final viewBox = _parseViewBox(svgElement.getAttribute('viewBox'));
 
     final regions = <ColorableRegion>[];
-    int index = 0;
+    int pathIndex = 0;
+
+    // Prepend a full-canvas colorable background region so children can also
+    // tap-fill or freehand-brush the sky/backdrop behind the main illustration.
+    final bgPath = Path()..addRect(viewBox);
+    regions.add(
+      ColorableRegion(
+        id: 'region_background',
+        path: bgPath,
+        pathData:
+            'M ${viewBox.left} ${viewBox.top} H ${viewBox.right} V ${viewBox.bottom} H ${viewBox.left} Z',
+        zIndex: 0,
+        isBackground: true,
+      ),
+    );
 
     for (final pathElement in svgElement.findAllElements('path')) {
       final pathData = pathElement.getAttribute('d');
@@ -37,7 +53,7 @@ class SvgParserService {
         continue;
       }
 
-      final id = pathElement.getAttribute('id') ?? 'region_${index + 1}';
+      final id = pathElement.getAttribute('id') ?? 'region_${pathIndex + 1}';
       final fixedColor = _parseHexColor(
         pathElement.getAttribute('data-fixed-color'),
       );
@@ -51,12 +67,12 @@ class SvgParserService {
           id: id,
           path: path,
           pathData: pathData,
-          zIndex: index,
+          zIndex: pathIndex + 1,
           fixedColor: fixedColor,
           previewColor: previewColor,
         ),
       );
-      index++;
+      pathIndex++;
     }
 
     return ParsedSvgDrawing(viewBox: viewBox, regions: regions);

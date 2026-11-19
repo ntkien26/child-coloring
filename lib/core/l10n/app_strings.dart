@@ -10,13 +10,20 @@ class AppStrings {
 
   bool get isVi => lang == AppLanguage.vi;
 
+  // Screen 0: Splash Screen
+  String get splashSubtitle => isVi
+      ? 'Thế giới sắc màu diệu kỳ cho bé!'
+      : 'A magical world of colors for kids!';
+  String get splashLoading =>
+      isVi ? 'Đang chuẩn bị hộp bút sáp...' : 'Preparing crayon box...';
+
   // Screen 1: Theme Hub
   String get appTitleLine1 => isVi ? 'BÉ TẬP' : 'KIDS';
   String get appTitleLine2 => isVi ? 'TÔ MÀU!' : 'COLORING!';
   String get appTitle => isVi ? 'Bé Tập Tô Màu!' : 'Kids Coloring!';
   String get chooseThemeSign => isVi ? 'CHỌN CHỦ ĐỀ!' : 'CHOOSE THEME!';
   String get unlockAll => isVi ? 'MỞ KHÓA TẤT CẢ' : 'UNLOCK ALL';
-  String get vipUnlockedBadge => isVi ? 'ĐÃ MỞ VIP!' : 'VIP UNLOCKED!';
+  String get vipUnlockedBadge => isVi ? 'ĐÃ MỞ KHÓA TẤT CẢ!' : 'UNLOCKED ALL!';
 
   // Screen 2: Drawing Select
   String get backButton => isVi ? 'QUAY LẠI' : 'BACK';

@@ -1,6 +1,6 @@
 {
-    "name": "kids_coloring_game",
-    "short_name": "kids_coloring_game",
+    "name": "Kids coloring",
+    "short_name": "Kids coloring",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

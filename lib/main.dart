@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/services/audio_service.dart';
 import 'providers/locale_provider.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   await AudioService.instance.init();
   runApp(const ProviderScope(child: KidsColoringApp()));
 }
@@ -55,7 +67,7 @@ class KidsColoringApp extends ConsumerWidget {
       title: s.appTitle,
       debugShowCheckedModeBanner: false,
       theme: base.copyWith(textTheme: _chunkyTextTheme(base.textTheme)),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

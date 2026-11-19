@@ -54,9 +54,12 @@ class ColoringSessionState {
   bool get canRedo => redoStack.isNotEmpty;
 
   int get coloredRegionCount {
-    final coloredIds = <String>{...regionFills.keys};
+    final coloredIds = <String>{
+      ...regionFills.keys.where((id) => id != 'region_background'),
+    };
     for (final stroke in strokes) {
-      if (stroke.pattern != BrushPattern.eraser) {
+      if (stroke.pattern != BrushPattern.eraser &&
+          stroke.regionId != 'region_background') {
         coloredIds.add(stroke.regionId);
       }
     }
@@ -197,7 +200,7 @@ class ColoringSessionNotifier extends StateNotifier<ColoringSessionState> {
   }
 
   /// Returns true if a change was applied.
-  bool fillRegion(String regionId) {
+  bool fillRegion(String regionId, {Offset? tapPoint}) {
     final nextFills = Map<String, RegionFill>.from(state.regionFills);
     final nextStrokes = List<BrushStroke>.from(state.strokes);
 
@@ -277,8 +280,8 @@ class ColoringSessionNotifier extends StateNotifier<ColoringSessionState> {
       id: 'sticker_${DateTime.now().microsecondsSinceEpoch}_$_stickerCounter',
       type: state.selectedStickerType,
       position: Offset(
-        svgPoint.dx.clamp(24.0, 476.0),
-        svgPoint.dy.clamp(24.0, 476.0),
+        svgPoint.dx.clamp(-400.0, 900.0),
+        svgPoint.dy.clamp(-400.0, 900.0),
       ),
     );
     state = state.copyWith(
@@ -297,8 +300,8 @@ class ColoringSessionNotifier extends StateNotifier<ColoringSessionState> {
 
   void moveSticker(String stickerId, Offset newSvgPosition) {
     final clamped = Offset(
-      newSvgPosition.dx.clamp(20.0, 480.0),
-      newSvgPosition.dy.clamp(20.0, 480.0),
+      newSvgPosition.dx.clamp(-400.0, 900.0),
+      newSvgPosition.dy.clamp(-400.0, 900.0),
     );
     final updated = state.stickers
         .map((s) => s.id == stickerId ? s.copyWith(position: clamped) : s)

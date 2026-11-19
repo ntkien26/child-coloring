@@ -34,6 +34,7 @@ class ColoringScreen extends ConsumerStatefulWidget {
 class _ColoringScreenState extends ConsumerState<ColoringScreen> {
   late final ThemedEffectGame _effectGame;
   bool _muted = AudioService.instance.isMuted;
+  int _lastTrailSpawnMs = 0;
 
   @override
   void initState() {
@@ -60,6 +61,7 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
 
     if (beforePattern == BrushPattern.eraser) {
       AudioService.instance.playErase();
+      _effectGame.spawnBurst(localPosition, accentColor: Colors.white);
     } else if (beforePattern == BrushPattern.solid) {
       AudioService.instance.playPop();
       _effectGame.spawnBurst(localPosition, accentColor: selectedColor);
@@ -82,6 +84,22 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
     } else {
       AudioService.instance.playPop();
       _effectGame.spawnBurst(localPosition, accentColor: session.selectedColor);
+    }
+  }
+
+  void _handleStrokeUpdate(Offset svgPoint, Offset localPosition) {
+    ref.read(coloringSessionProvider.notifier).appendStrokePoint(svgPoint);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastTrailSpawnMs >= 55) {
+      _lastTrailSpawnMs = now;
+      final session = ref.read(coloringSessionProvider);
+      if (session.selectedPattern != BrushPattern.eraser) {
+        _effectGame.spawnBrushTrail(
+          localPosition,
+          accentColor: session.selectedColor,
+          isSpecialPattern: session.selectedPattern != BrushPattern.solid,
+        );
+      }
     }
   }
 
@@ -136,7 +154,9 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
                 if (mounted) {
                   ref.read(coloringSessionProvider.notifier).startPage(
                         pageId: widget.page.id,
-                        totalColorableRegions: drawing.colorableRegions.length,
+                        totalColorableRegions: drawing.colorableRegions
+                            .where((r) => !r.isBackground)
+                            .length,
                       );
                 }
               });
@@ -398,26 +418,36 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
                   SizedBox(
                     width: 58,
                     height: 58,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          value: session.completionProgress,
-                          strokeWidth: 7,
-                          backgroundColor: const Color(0xFFEBDAB6),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF59D355),
-                          ),
-                        ),
-                        Text(
-                          '${(session.completionProgress * 100).round()}%',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w900,
-                            color: kComicInk,
-                          ),
-                        ),
-                      ],
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(
+                        begin: 0,
+                        end: session.completionProgress.clamp(0.0, 1.0),
+                      ),
+                      duration: const Duration(milliseconds: 380),
+                      curve: Curves.easeOutBack,
+                      builder: (context, animatedProgress, _) {
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              value: animatedProgress.clamp(0.0, 1.0),
+                              strokeWidth: 7,
+                              backgroundColor: const Color(0xFFEBDAB6),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF59D355),
+                              ),
+                            ),
+                            Text(
+                              '${(animatedProgress * 100).round()}%',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                color: kComicInk,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -496,9 +526,8 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Interactive Coloring Canvas
-            Padding(
-              padding: const EdgeInsets.all(8),
+            // Interactive Coloring Canvas (fills entire stage edge-to-edge)
+            Positioned.fill(
               child: ColoringCanvas(
                 drawing: drawing,
                 regionFills: session.regionFills,
@@ -509,7 +538,7 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
                 selectedPattern: session.selectedPattern,
                 onRegionTap: _handleRegionTap,
                 onStrokeStart: _handleStrokeStart,
-                onStrokeUpdate: notifier.appendStrokePoint,
+                onStrokeUpdate: _handleStrokeUpdate,
                 onStrokeEnd: _handleStrokeEnd,
                 onAddSticker: _handleAddSticker,
                 onStickerDragStart: notifier.snapshotBeforeStickerDrag,
@@ -529,12 +558,15 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
             ),
 
             // Joyful 100% completion celebration banner
-            if (session.isCompleted)
-              Positioned(
-                top: 12,
-                left: 14,
-                right: 14,
-                child: Center(
+            Positioned(
+              top: 12,
+              left: 14,
+              right: 14,
+              child: Center(
+                child: AnimatedScale(
+                  scale: session.isCompleted ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.elasticOut,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
@@ -576,6 +608,7 @@ class _ColoringScreenState extends ConsumerState<ColoringScreen> {
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -599,30 +632,37 @@ class _CartoonPercentBar extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress.clamp(0.0, 1.0),
-              child: const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF7BE86B), Color(0xFF42B839)],
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: progress.clamp(0.0, 1.0)),
+          duration: const Duration(milliseconds: 380),
+          curve: Curves.easeOutBack,
+          builder: (context, animatedProgress, _) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: animatedProgress.clamp(0.0, 1.0),
+                  child: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF7BE86B), Color(0xFF42B839)],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Center(
-              child: OutlinedComicText(
-                '${(progress * 100).round()}%',
-                fontSize: 10,
-                fillColor: Colors.white,
-                strokeWidth: 2.6,
-                shadowOffset: Offset.zero,
-              ),
-            ),
-          ],
+                Center(
+                  child: OutlinedComicText(
+                    '${(animatedProgress * 100).round()}%',
+                    fontSize: 10,
+                    fillColor: Colors.white,
+                    strokeWidth: 2.6,
+                    shadowOffset: Offset.zero,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

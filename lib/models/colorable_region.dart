@@ -71,6 +71,7 @@ class ColorableRegion {
     required this.zIndex,
     this.fixedColor,
     this.previewColor,
+    this.isBackground = false,
   }) : bounds = path.getBounds();
 
   final String id;
@@ -79,6 +80,7 @@ class ColorableRegion {
   final int zIndex;
   final Color? fixedColor;
   final Color? previewColor;
+  final bool isBackground;
   final Rect bounds;
 
   bool get isFixed => fixedColor != null;
