@@ -1,8 +1,23 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:label="kids_coloring_game"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!--
+          Temporary development setting: Google Mobile Ads requires an AdMob
+          application ID before its startup provider can run. Remove this entry
+          and add the Application ID meta-data when AdMob is configured.
+        -->
+        <provider
+            android:name="com.google.android.gms.ads.MobileAdsInitProvider"
+            tools:node="remove" />
+        <!-- Vulkan Impeller exhausts the Adreno memory pool when switching
+             between the SVG-heavy galleries. Use the stable Skia renderer on
+             Android until the driver/engine issue is resolved. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

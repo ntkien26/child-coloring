@@ -13,6 +13,10 @@ class AdsService {
   bool _initialized = false;
   RewardedAd? _rewardedAd;
 
+  // Ads stay disabled until an AdMob application ID is configured for Android.
+  // Enable explicitly with: --dart-define=ADS_ENABLED=true
+  static const bool _adsEnabled = bool.fromEnvironment('ADS_ENABLED');
+
   bool get isSupportedMobilePlatform =>
       !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
@@ -25,7 +29,7 @@ class AdsService {
     if (_initialized) return;
     _initialized = true;
 
-    if (mockMode || !isSupportedMobilePlatform) {
+    if (mockMode || !_adsEnabled || !isSupportedMobilePlatform) {
       return;
     }
 
@@ -50,7 +54,7 @@ class AdsService {
   }
 
   Future<void> loadRewardedAd() async {
-    if (mockMode || !isSupportedMobilePlatform) return;
+    if (mockMode || !_adsEnabled || !isSupportedMobilePlatform) return;
     final unitId = MonetizationIds.rewardedAdUnitId;
     if (unitId.isEmpty) return;
 
@@ -72,7 +76,10 @@ class AdsService {
   Future<bool> showRewardedAdForUnlock({
     required VoidCallback onRewardEarned,
   }) async {
-    if (mockMode || !isSupportedMobilePlatform || _rewardedAd == null) {
+    if (mockMode ||
+        !_adsEnabled ||
+        !isSupportedMobilePlatform ||
+        _rewardedAd == null) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       onRewardEarned();
       return true;

@@ -16,6 +16,7 @@ class SafeBannerAd extends ConsumerStatefulWidget {
 }
 
 class _SafeBannerAdState extends ConsumerState<SafeBannerAd> {
+  static const bool _adsEnabled = bool.fromEnvironment('ADS_ENABLED');
   BannerAd? _bannerAd;
   bool _isLoaded = false;
 
@@ -27,6 +28,8 @@ class _SafeBannerAdState extends ConsumerState<SafeBannerAd> {
   }
 
   void _loadBannerIfSupported() {
+    if (!_adsEnabled) return;
+
     final monetization = ref.read(monetizationProvider);
     if (monetization.isAdsRemoved || monetization.isVipUnlocked) return;
 

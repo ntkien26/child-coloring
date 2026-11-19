@@ -78,11 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   iconSize: 23,
                   onTap: _toggleMute,
                 ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 8),
-                child: WoodenSignboard(
+                bottomAction: WoodenSignboard(
                   label: s.chooseThemeSign,
                   fontSize: 18,
                 ),

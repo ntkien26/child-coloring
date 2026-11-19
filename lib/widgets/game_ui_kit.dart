@@ -372,12 +372,16 @@ class StorybookHeroHeader extends StatelessWidget {
     required this.line2,
     required this.leftAction,
     required this.rightAction,
+    this.bottomAction,
   });
 
   final String line1;
   final String line2;
   final Widget leftAction;
   final Widget rightAction;
+
+  /// Optional callout displayed beside the panda, within the hero artwork.
+  final Widget? bottomAction;
 
   static const List<Color> _line1Colors = [
     Color(0xFFFFB02E),
@@ -449,6 +453,16 @@ class StorybookHeroHeader extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (bottomAction != null)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: h * 0.65,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: bottomAction!,
+                          ),
+                        ),
                     ],
                   ),
                 ),

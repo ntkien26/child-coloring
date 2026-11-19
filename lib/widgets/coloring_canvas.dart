@@ -308,15 +308,19 @@ class _ColoringCanvasPainter extends CustomPainter {
       _paintStickerHalo(canvas);
     }
 
-    // Group freehand strokes by regionId
-    final strokesByRegion = <String, List<BrushStroke>>{};
-    for (final s in strokes) {
-      strokesByRegion.putIfAbsent(s.regionId, () => []).add(s);
-    }
-    if (activeStroke != null) {
-      strokesByRegion
-          .putIfAbsent(activeStroke!.regionId, () => [])
-          .add(activeStroke!);
+    // Thumbnails have neither strokes nor an active stroke. Avoid allocating
+    // a map for every paint of those gallery previews.
+    Map<String, List<BrushStroke>>? strokesByRegion;
+    if (strokes.isNotEmpty || activeStroke != null) {
+      strokesByRegion = <String, List<BrushStroke>>{};
+      for (final s in strokes) {
+        strokesByRegion.putIfAbsent(s.regionId, () => []).add(s);
+      }
+      if (activeStroke != null) {
+        strokesByRegion
+            .putIfAbsent(activeStroke!.regionId, () => [])
+            .add(activeStroke!);
+      }
     }
 
     // 1. Paint all colorable regions (base fill + pattern + 3D Auto-Shading + clipped strokes + outline)
@@ -337,7 +341,7 @@ class _ColoringCanvasPainter extends CustomPainter {
               : null)
           : regionFills[region.id];
 
-      final regionStrokes = strokesByRegion[region.id];
+      final regionStrokes = strokesByRegion?[region.id];
 
       // White base inside region
       canvas.drawPath(region.path, paperPaint);
@@ -578,7 +582,11 @@ class _ColoringCanvasPainter extends CustomPainter {
         oldDelegate.strokes != strokes ||
         oldDelegate.activeStroke != activeStroke ||
         oldDelegate.stickers != stickers ||
+        oldDelegate.transform.scale != transform.scale ||
+        oldDelegate.transform.dx != transform.dx ||
+        oldDelegate.transform.dy != transform.dy ||
         oldDelegate.usePreviewColors != usePreviewColors ||
+        oldDelegate.transparentBackground != transparentBackground ||
         oldDelegate.stickerStyle != stickerStyle;
   }
 }
